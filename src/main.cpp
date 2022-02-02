@@ -9,10 +9,6 @@
 DHT12 dht12; //Preset scale CELSIUS and ID 0x5c.
 Adafruit_BMP280 bme;
 
-// const char* ssid = "Your SSID";        //Add your own wifi connection info and time server.
-// const char* password = "Your Password";
-// const char* ntpServer = "ADD TIME SERVER";
-
 const char* ssid = "CAMPUS-HEP-TOULOUSE";        //Add your own wifi connection info and time server.
 const char* password = "";
 const char* ntpServer = "ntp.midway.ovh";
@@ -34,21 +30,17 @@ void setTime() {
   Serial.printf("Attempting to connect to %s ", ssid);
   WiFi.begin(ssid, password);
   delay(1000);
-  // while(WiFi.status() != WL_CONNECTED) { //If the wifi connection fails.  若wifi未连接成功
-  //   delay(500); //delay 0.5s.  延迟0.5s
-  //   M5.Lcd.print(".");
-  // }
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.print("Connexion au \r\nWi-fi en cours");
+  while(WiFi.status() != WL_CONNECTED) { //If the wifi connection fails.  若wifi未连接成功
+    delay(500); //delay 0.5s.  延迟0.5s
+    M5.Lcd.print(".");
+  }
   while (WiFi.status() == WL_CONNECTED) {  //if wifi does connect go ahead and set the time with NTP
+
     Serial.println(" CONNECTED, SETTING TIME");
-    
-        // Set NTP time to local
-    // configTime(5 * 3600, 3600, ntpServer);  // -5 is for my timezone. (utc - 5)
 
-//     configTime(0, 0, ntpServer);
-// setenv("TZ", "CST6CDT,M3.2.0/02:00:00,M11.1.0/02:00:00", 1);  
-// tzset();
-
-    configTzTime("CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00", ntpServer);
+    configTime(1 * 3600, 3600, ntpServer); //1 is for my timezone in Europe/Paris (utc +1) 
   
     // Get local time
     struct tm timeInfo;
@@ -81,16 +73,18 @@ void loadDisplay() {
   
   M5.Rtc.GetTime(&RTC_TimeStruct);
   M5.Rtc.GetData(&RTC_DateStruct);
-  if (RTC_TimeStruct.Hours > 12) {  //change to 12h format
-      RTC_TimeStruct.Hours -= 12;
-    }
-  M5.Lcd.fillScreen(BLACK);  
+  // if (RTC_TimeStruct.Hours > 12) {  //change to 12h format
+  //     RTC_TimeStruct.Hours -= 12;
+  //   }
+  M5.Lcd.fillScreen(WHITE); 
+  M5.Lcd.setTextColor(TFT_BLACK, TFT_WHITE); 
   M5.Lcd.setTextSize(1);
   M5.Lcd.setCursor(2, 2);
   M5.Lcd.printf("%s   %02d-%02d-%04d", wd[RTC_DateStruct.WeekDay], RTC_DateStruct.Date, RTC_DateStruct.Month, RTC_DateStruct.Year);
-  M5.Lcd.drawLine(0, 15, 159, 15, TFT_WHITE);
+  M5.Lcd.drawLine(0, 15, 159, 15, TFT_BLACK);
   M5.Lcd.setCursor(2, 25);
   M5.Lcd.setTextSize(3);
+  M5.Lcd.setTextColor(TFT_RED, TFT_WHITE); 
   M5.Lcd.printf("%02d:%02d", RTC_TimeStruct.Hours, RTC_TimeStruct.Minutes);
   M5.Lcd.setCursor(100, 32);
   M5.Lcd.setTextSize(2);
@@ -103,14 +97,15 @@ void batteryPercent() {
   b = M5.Axp.GetVbatData() * 1.1 / 1000;
   battery = ((b - 3.0) / 1.2) * 100;
 
-  if (battery > 100)
-    battery = 100;
-  else if (battery < 100 && battery > 9)
-    M5.Lcd.print(" ");
-  else if (battery < 9)
-    M5.Lcd.print("  ");
-  if (battery < 10)
-    M5.Axp.DeepSleep();
+  // if (battery > 100)
+  //   battery = 100;
+  // else if (battery < 100 && battery > 9)
+  //   M5.Lcd.print(" ");
+  // else if (battery < 9)
+  //   M5.Lcd.print("  ");
+  // if (battery < 10)
+  //   M5.Axp.DeepSleep();
+  M5.Lcd.setTextColor(TFT_BLACK, TFT_GREEN);
   M5.Lcd.print(battery);
   M5.Lcd.print("%");
 
@@ -121,9 +116,13 @@ void setup() {
 
   M5.begin(true,true,true);
   M5.Lcd.setRotation(3);
-  M5.Axp.ScreenBreath(8);  //screen brightness 7-15
+  // M5.Axp.ScreenBreath(8);  //screen brightness 7-15
+  M5.Axp.ScreenBreath(15); 
   M5.Lcd.fillScreen(BLACK);
+  // configTzTime("CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00", ntpServer);
   setTime();
+  // configTzTime(parametre1, parametre2);
+  
 }
 
 void loop() {
@@ -145,16 +144,16 @@ void loop() {
         
 
         } else if(modeButton == LOW && sleepButton == HIGH) {
-          M5.Lcd.fillScreen(BLACK);    //Added visual indicator to add time between the button press and state change.
-          M5.Lcd.setCursor(2, 25);
-          M5.Lcd.setTextSize(1);
-          M5.Lcd.printf("Changing Modes");
-          Serial.begin(115200);
-          // Serial2.begin(unsigned long baud, uint32_t config, int8_t rxPin, int8_t txPin, bool invert)
-          Serial2.begin(115200, SERIAL_8N1, 26, 0); //Sets the pin configuration for mode 2 serial pass through
-          delay(1000);
-          M5.Lcd.fillScreen(BLACK);
-          M5.Lcd.setCursor(2, 2);
+          // M5.Lcd.fillScreen(BLACK);    //Added visual indicator to add time between the button press and state change.
+          // M5.Lcd.setCursor(2, 25);
+          // M5.Lcd.setTextSize(1);
+          // M5.Lcd.printf("Passage 1");
+          // Serial.begin(115200);
+          // // Serial2.begin(unsigned long baud, uint32_t config, int8_t rxPin, int8_t txPin, bool invert)
+          // Serial2.begin(115200, SERIAL_8N1, 26, 0); //Sets the pin configuration for mode 2 serial pass through
+          // delay(1000);
+          // M5.Lcd.fillScreen(BLACK);
+          // M5.Lcd.setCursor(2, 2);
           state = 2;
         } else if(modeButton == HIGH && sleepButton == LOW) {
           M5.Lcd.fillScreen(BLACK);
@@ -173,21 +172,22 @@ void loop() {
           float tmp = dht12.readTemperature();
           float hum = dht12.readHumidity();
           float pressure = bme.readPressure();
-          Serial.printf("Temperatura: %2.2f*C  Humedad: %0.2f%%  Pressure: %0.2fPa\r\n", tmp, hum, pressure);
+          // Serial.printf("Temperatura: %2.2f*C  Humedad: %0.2f%%  Pressure: %0.2fPa\r\n", tmp, hum, pressure);
 
-          M5.Lcd.fillScreen(BLACK);
           M5.Lcd.setCursor(0, 15);
-          M5.Lcd.setTextColor(WHITE, BLACK);
-          M5.Lcd.setTextSize(1);
-          M5.Lcd.printf("Temp: %2.1f  \r\nHumi: %2.0f%%  \r\nPressure:%2.0fPa\r\n", tmp, hum, pressure);
+          M5.Lcd.fillScreen(WHITE); 
+          M5.Lcd.setTextColor(PURPLE, TFT_WHITE); 
+          M5.Lcd.setTextSize(2);
+          M5.Lcd.printf("Temp: %2.1fC\r\nHumi: %2.0f%%  \r\nPression:%2.0fPa\r\n", tmp, hum, pressure);
   
           delay(1000);
           
         } else if(modeButton == LOW && sleepButton == HIGH) {
-          M5.Lcd.fillScreen(BLACK);   //Added visual indicator to add time between the button press and state change.
+          M5.Lcd.setTextColor(TFT_WHITE, TFT_BLACK);
+          M5.Lcd.fillScreen(BLACK);    //Added visual indicator to add time between the button press and state change.
           M5.Lcd.setCursor(2, 25);
-          M5.Lcd.setTextSize(1);
-          M5.Lcd.printf("Changing Modes");
+          M5.Lcd.setTextSize(2);
+          M5.Lcd.printf("Retour a \r\nl'accueil");
           delay(1000);
           state = 1;
         } else if(modeButton == HIGH && sleepButton == LOW) {
@@ -218,11 +218,13 @@ void loop() {
             delay(500);
             
 
-            }else if(modeButton == LOW && sleepButton == HIGH) {
+            }
+            else if(modeButton == LOW && sleepButton == HIGH) {
+              M5.Lcd.setTextColor(TFT_WHITE, TFT_BLACK);
               M5.Lcd.fillScreen(BLACK);   //Added visual indicator to add time between the button press and state change.
               M5.Lcd.setCursor(2, 25);
-              M5.Lcd.setTextSize(1);
-              M5.Lcd.printf("Changing Modes");
+              M5.Lcd.setTextSize(2);
+              M5.Lcd.printf("Passage en\r\nmode capteur");
               Wire.begin(0,26);  //Wire.begin(sda, scl); Sets the pin configuration for mode 3 and the ENV hat
               delay(1000);
               state = 3;
